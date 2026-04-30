@@ -1,84 +1,126 @@
-# LED Matrix System Tray Profiles
+# LED Matrix System Tray App
 
-This is a small Python script that drives one or two 9×34 LED matrices from the Windows system tray. It shows:
+This repository contains two ways to run the LED Matrix tray app:
+
+- **v2 – Open-source Python scripts** you can run and modify yourself.
+- **v2.5 – Packaged Windows app with installer** for an easier, no-Python setup.
+
+Both versions drive one or two 9×34 LED matrices from the Windows system tray and support these profiles:
 
 - A short **ripple** animation at startup.
-- A **System Bars** view (CPU, RAM, battery).
-- A **Waterfall Gradient** animation.
-- A **Clock** (vertical `HH:MM`).
-- A **Digital Rain** animation.
-- A **Local Weather** view (current conditions + temperature).
+- **System Bars** (CPU, RAM, battery).
+- **Waterfall Gradient** animation.
+- **Clock** (vertical `HH:MM` style).
+- **Digital Rain** animation.
+- **Local Weather** (current conditions + temperature).
 
-The script adds an icon to the Windows system tray so you can switch between profiles from a menu.
-
-If two matrices are connected, the script can control them independently as **left** and **right** panels. If only one matrix is connected, it will still run in single-panel mode.
+If two matrices are connected, the app can control them independently as **left** and **right** panels. If only one matrix is connected, it runs in single-panel mode.
 
 ---
 
-## Files
+## Quick start
 
-You should have these files together in the same folder (for example `C:\\tools`):
+You can either:
 
-- `led_tray_profiles.py` – the main Python script.
-- `start_led_tray.bat` – optional batch file to launch the script.
-- `led_matrix.py`
-- (Optional) `framework_icon.png` – custom icon for the tray (otherwise a simple default icon is generated).
+- Use the **v2.5 installer** (recommended for most users), or  
+- Keep using the **v2 open-source Python files** if you want to edit the code directly.
+
+### Option A – v2.5 installer (no Python required)
+
+The v2.5 app is a packaged Windows tray application:
+
+- No need to install Python or any packages.
+- Includes an integrated **Settings** window:
+  - Select left/right COM ports.
+  - Choose default profiles per side.
+  - Configure weather location and units.
+  - Control startup behavior.
+
+#### Install
+
+1. Go to the **Releases** page on this repo and download the latest `LEDMatrixTraySetup-vX.Y.exe`.  
+2. Run the installer and follow the prompts.
+3. After installation, launch **LED Matrix Tray** from the Start Menu (or let it auto-start if you enable that).
+
+When running:
+
+- The LED matrix will show a startup ripple.
+- A tray icon will appear in the Windows taskbar.
+- Right-click the icon to switch profiles, open Settings, or quit.
+
+> Note: The v2.5 app is open source. You’re allowed to use it and modiy it, but you **may not sell** it or any product based on it without my permission (see `LICENSE`).
 
 ---
 
-## Prerequisites
+### Option B – v2 open-source Python scripts
 
-1. **Windows PC** with one or two attached LED matrices that work with the `led_matrix` Python module.
+The v2 scripts remain in this repo for anyone who wants to:
+
+- Read or modify the source code.
+- Run the tray app directly via Python.
+- Build their own variations.
+
+These files live in the repo as:
+
+- `v2/led_tray_profiles.py` – main Python script.
+- `v2/start_led_tray.bat` – optional batch file to launch the script.
+- `v2/led_matrix.py` – LED matrix driver.
+- Optional: `framework_icon.png` – custom tray icon (otherwise a simple default icon is generated).
+
+#### Prerequisites
+
+1. **Windows PC** with one or two supported 9×34 LED matrices.
 2. **Python 3.x** installed and on your PATH:
    - Download from [https://www.python.org/](https://www.python.org/) and check “Add Python to PATH” during install.
-3. **Python packages**:
-   - `psutil` – reads CPU, RAM, battery stats.
-   - `pystray` – creates the system tray icon and menu.
-   - `Pillow` – used to create the tray icon image (`PIL`).
-4. **Internet connection** for the weather profile:
-   - The **Local Weather** profile uses the Open-Meteo Forecast API to request current `temperature_2m` and `weather_code` data for the configured latitude and longitude.
+3. Python packages:
+   - `psutil` – CPU, RAM, battery stats.
+   - `pystray` – system tray icon and menu.
+   - `Pillow` – tray icon image (`PIL`).
+4. **Internet connection** for the weather profile (Open-Meteo API).
 
-> Note: the weather feature uses Python standard-library modules (`urllib.request` and `json`) in addition to the packages above, so you do **not** need to install an extra weather package.
+The weather feature uses `urllib.request` and `json` from Python’s standard library, so you don’t need any extra weather-specific packages.
 
----
-
-## One-time setup
+#### One-time setup
 
 1. Create a folder for the project, e.g.:
 
-   C:\\tools
+   ```text
+   C:\tools\led-matrix-tray-v2
+   ```
 
-2. Copy these files into that folder:
+2. Copy these files from the repo’s `v2` folder into that folder:
 
    - `led_tray_profiles.py`
    - `start_led_tray.bat`
    - `led_matrix.py`
    - Optional: `framework_icon.png`
 
-3. Open **Command Prompt** and install the required Python packages:
+3. Install the required Python packages:
 
+   ```text
    pip install psutil pystray Pillow
+   ```
 
-   If you have multiple Python versions, you may need:
+   If you have multiple Python versions:
 
+   ```text
    py -m pip install psutil pystray Pillow
+   ```
 
----
+#### COM port configuration
 
-## Matrix connection
+The v2 script supports:
 
-The script supports:
+- **One matrix** – runs in single-panel mode.
+- **Two matrices** – treats them as **left** and **right**.
+- **No matrices** – exits with an error.
 
-- **One matrix connected** – the app will still start and run normally.
-- **Two matrices connected** – the app will detect both and treat them as **left** and **right** panels.
-- **No matrices connected** – the script will raise an error and exit.
+By default, it uses:
 
-By default, the script looks for:
+- Left matrix – `COM3`
+- Right matrix – `COM5`
 
-- **Left matrix** on `COM3`
-- **Right matrix** on `COM5`
-
-If your hardware uses different COM ports, change the values near the top of `led_tray_profiles.py`:
+Edit `DEFAULT_PORTS` near the top of `led_tray_profiles.py` if your ports are different:
 
 ```python
 DEFAULT_PORTS = {
@@ -87,148 +129,134 @@ DEFAULT_PORTS = {
 }
 ```
 
-When the script starts, the tray app title changes depending on what it found:
+When the script starts, the tray title reflects what was detected:
 
 - `LED Matrix - Dual Mode`
 - `LED Matrix - Left Only (COM3)`
 - `LED Matrix - Right Only (COM5)`
 
----
+#### Running v2
 
-## How to run
+**Option 1 – Directly via Python**
 
-### Option 1 – Run the Python script directly
+```text
+cd C:\tools\led-matrix-tray-v2
+python led_tray_profiles.py
+```
 
-1. Open **Command Prompt**.
-2. Change to the folder where you put the files, for example:
+(or `py led_tray_profiles.py`)
 
-   cd C:\\tools
+**Option 2 – Using the batch file**
 
-3. Run:
+If `start_led_tray.bat` looks like:
 
-   python led_tray_profiles.py
+```bat
+@echo off
+cd /d C:\tools\led-matrix-tray-v2
+python led_tray_profiles.py
+```
 
-   or, if needed:
+you can just double-click the batch file.
 
-   py led_tray_profiles.py
+Once running:
 
-4. After a moment:
-   - The LED matrix will show a startup ripple.
-   - A new icon will appear in the **system tray** (bottom-right of the Windows taskbar).
-   - Right-click the icon to switch profiles or quit.
-
-### Option 2 – Use the batch file
-
-If `start_led_tray.bat` is set up like this (adjust the path if you used a different folder):
-
-   @echo off
-   cd /d C:\\tools
-   python led_tray_profiles.py
-
-You can:
-
-1. Double-click `start_led_tray.bat` in Explorer.
-2. The tray icon will appear and the LED matrix will start updating.
+- The matrix shows a startup ripple.
+- A tray icon appears in the Windows taskbar.
+- Right-click the icon to switch profiles or quit.
 
 ---
 
-## Profiles
-
-From the tray icon menu you can choose:
+## Profiles (both v2 and v2.5)
 
 - **System Bars**  
-  Shows CPU, RAM, and battery usage as thick vertical bars.
+  CPU, RAM, and battery usage as vertical bars.
 
 - **Waterfall Gradient**  
-  Animated brightness gradient flowing down the matrix.
+  Animated vertical brightness gradient.
 
 - **Clock**  
-  12-hour time displayed as vertical digits in the center.
+  12-hour time shown as vertical digits.
 
 - **Digital Rain**  
-  Matrix-style falling columns with a bright “head” and fading tail.
+  Matrix-style falling columns with a bright head and fading tail.
 
 - **Local Weather**  
-  Shows current weather conditions and temperature for the configured location. The script calls the Open-Meteo API using your latitude and longitude, reads `temperature_2m` and `weather_code`, and maps the weather code into a small icon set such as clear, cloudy, fog, rain, snow, or storm.
+  Shows an icon for current weather (clear, cloudy, fog, rain, snow, storm) plus the current temperature, using the Open-Meteo API and your configured latitude/longitude.
 
-- **Quit**  
-  Stops updating the LED matrix and exits the tray app.
-
-> In dual-matrix mode, each side has its own submenu in the tray icon, so you can run different profiles on the left and right panels at the same time.
+In dual-matrix mode, each side has its own submenu in the tray icon, so you can run different profiles on the left and right panels at the same time.
 
 ---
 
-## Changing the weather location
+## Weather configuration
 
-The weather view uses two constants near the top of `led_tray_profiles.py`:
+### v2
+
+In `led_tray_profiles.py`, adjust:
 
 ```python
 WEATHER_LAT = 42.534901
 WEATHER_LON = -92.445312
 ```
 
-Change those values to the latitude and longitude of the place you want to use, then save the file and restart the script.
-
-Example:
+to match your location (for example, New York City):
 
 ```python
 WEATHER_LAT = 40.7128
 WEATHER_LON = -74.0060
 ```
 
-That would use New York City.
+### v2.5
 
-### How to find coordinates
+Use the **Settings** window:
 
-- In **Google Maps**, right-click the spot you want and copy the latitude/longitude shown in the menu.
-- You can also use the **Open-Meteo Geocoding API** to search for a city and get its coordinates.
+- Set latitude and longitude.
+- Choose Fahrenheit or Celsius.
+- Set the refresh interval in seconds.
 
----
-
-## Weather notes
-
-- The weather data refreshes periodically rather than every frame, so the display does not spam the API continuously.
-- If the weather request fails and there is no cached result yet, the script falls back to a simple placeholder until a successful fetch is available.
-- The weather profile currently requests Fahrenheit values.
+> Tip: In Google Maps you can right-click a point and copy its latitude/longitude.
 
 ---
 
-## Autostart with Windows (optional)
+## Autostart with Windows
 
-If you want this to start automatically when you log in:
+### v2.5
 
-1. Make sure `start_led_tray.bat` works when you double-click it.
-2. Press `Win + R`, type:
+Use the **Start with Windows** option in the Settings window (recommended).
 
-   shell:startup
+### v2
 
-   and press Enter. This opens your **Startup** folder.
-
-3. Copy a **shortcut** to `start_led_tray.bat` into this Startup folder.
-
-Next time you log in, Windows will run the batch file, which launches the Python script and shows the tray icon.
+1. Verify `start_led_tray.bat` works when double-clicked.
+2. Press `Win + R`, type `shell:startup`, and press Enter.
+3. Place a shortcut to `start_led_tray.bat` in the Startup folder.
 
 ---
 
 ## Troubleshooting
 
 - **Tray icon does not appear**
-  - Make sure Python is installed and accessible from the command line.
-  - Confirm `psutil`, `pystray`, and `Pillow` are installed with `pip list`.
+  - For v2: Check Python is installed and that `psutil`, `pystray`, and `Pillow` are installed.
+  - For v2.5: Try reinstalling from the latest installer and check antivirus/SmartScreen prompts.
 
 - **No output on the LED matrix**
-  - Confirm your `led_matrix` module is present in the same folder and correctly configured for your hardware.
-  - Ensure any required drivers or permissions for the LED device are installed.
-  - Verify the configured COM ports match your actual hardware.
+  - Confirm the matrices are connected and on the COM ports you configured.
+  - Make sure any required USB/serial drivers are installed.
 
-- **Only one matrix is detected**
-  - Check the USB/serial connection for the missing panel.
-  - Confirm the correct COM port is assigned in `DEFAULT_PORTS`.
+- **Only one matrix detected**
+  - Check the cable and port for the missing panel.
+  - Make sure its COM port is different from the other and correctly configured.
 
-- **Weather profile does not update**
-  - Confirm you have an active internet connection.
-  - Check that `WEATHER_LAT` and `WEATHER_LON` are valid numbers in the script.
-  - Make sure the Open-Meteo request URL in the script has not been edited incorrectly.
+- **Weather does not update**
+  - Confirm you have internet access.
+  - Ensure latitude/longitude are set correctly.
+  - For v2, verify the Open-Meteo URL in the script has not been altered incorrectly.
 
-- **Multiple Python versions**
-  - You may need to use `py -3 led_tray_profiles.py` or adjust the `python` call in the batch file to the correct interpreter.
+---
+
+## Contributing / Feedback
+
+- For v2 script changes, feel free to open a PR or fork and experiment.
+- For v2.5 feature requests or bug reports, open an issue and include:
+  - App version.
+  - Description of the problem and steps to reproduce.
+ 
+  or email: CJVsolutions2026@outlook.com
